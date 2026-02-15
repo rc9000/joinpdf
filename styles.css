@@ -40,7 +40,7 @@ body {
   margin: 0;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  /*text-transform: uppercase;*/
   color: #0369a1;
   font-weight: 700;
 }
