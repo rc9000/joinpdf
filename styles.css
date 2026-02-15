@@ -1,0 +1,156 @@
+:root {
+  color-scheme: light;
+  --bg: #f3f6fb;
+  --panel: #ffffff;
+  --ink: #1f2937;
+  --muted: #6b7280;
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --border: #d1d5db;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top right, #dbeafe, var(--bg));
+  color: var(--ink);
+}
+
+.app {
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 0 1rem 2rem;
+}
+
+.brand {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 14px;
+  background:
+    linear-gradient(120deg, rgba(15, 118, 110, 0.14), rgba(2, 132, 199, 0.16)),
+    #ffffff;
+  border: 1px solid #bfdbfe;
+}
+
+.brand-kicker {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0369a1;
+  font-weight: 700;
+}
+
+.brand-name {
+  margin: 0.25rem 0 0;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.subtitle {
+  color: #334155;
+  margin: 0.55rem 0 0;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+input[type="file"],
+input[type="text"] {
+  width: 100%;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+}
+
+.checkbox input[type="checkbox"] {
+  width: auto;
+}
+
+.file-list {
+  margin: 0.5rem 0 0.25rem 1.1rem;
+  color: var(--muted);
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+pre {
+  white-space: pre-wrap;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 80px;
+  padding: 0.75rem;
+  margin: 0;
+}
+
+.download {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  text-decoration: none;
+}
+
+.download.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.info p {
+  margin: 0.6rem 0 0;
+  color: #334155;
+}
+
+.info a {
+  color: #0369a1;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .app {
+    margin-top: 1rem;
+  }
+}

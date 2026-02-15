@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JoinPDF | ramseyer.it</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="brand">
+      <p class="brand-kicker">ramseyer.it/joinpdf</p>
+      <h1 class="brand-name">JoinPDF</h1>
+      <p class="subtitle">Fast browser-only PDF merges powered by <code>pdfcpu.wasm</code></p>
+    </header>
+
+    <section class="panel">
+      <label for="pdfs">PDF files (2 to 10, in order)</label>
+      <input id="pdfs" type="file" accept="application/pdf,.pdf" multiple>
+      <ol id="fileList" class="file-list"></ol>
+
+      <label class="checkbox">
+        <input id="insertDivider" type="checkbox">
+        Insert a blank page between merged documents
+      </label>
+
+      <label class="checkbox">
+        <input id="addCover" type="checkbox">
+        Add a cover page listing included documents
+      </label>
+
+      <label for="outputName">Output filename</label>
+      <input id="outputName" type="text" value="merged.pdf" placeholder="merged.pdf">
+
+      <button id="mergeBtn" type="button">Merge PDFs</button>
+    </section>
+
+    <section class="panel">
+      <h2>Status</h2>
+      <pre id="status" aria-live="polite">Ready.</pre>
+      <a id="downloadLink" class="download disabled" href="#" download="merged.pdf" aria-disabled="true">Download merged PDF</a>
+    </section>
+
+    <section class="panel info">
+      <h2>How This Works</h2>
+      <p>
+        JoinPDF runs fully in your browser. Your PDF files are processed locally in memory using WebAssembly,
+        and they are not uploaded or sent to any server.
+      </p>
+      <p>
+        Powered by
+        <a href="https://github.com/pdfcpu/pdfcpu" target="_blank" rel="noopener noreferrer">pdfcpu</a>
+        compiled to
+        <a href="https://en.wikipedia.org/wiki/WebAssembly" target="_blank" rel="noopener noreferrer">WebAssembly</a>.
+      </p>
+    </section>
+  </main>
+
+  <script src="wasm_exec.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
