@@ -7,6 +7,7 @@ const els = {
   mergeBtn: document.getElementById("mergeBtn"),
   status: document.getElementById("status"),
   downloadLink: document.getElementById("downloadLink"),
+  languageSelect: document.getElementById("languageSelect"),
 };
 
 const MAX_FILES = 10;
@@ -21,13 +22,124 @@ const O_APPEND = 1024;
 
 let mergedUrl = null;
 let wasmBytesPromise = null;
+let lastStatusKey = null;
+
+const I18N = {
+  en: {
+    languageEnglish: "English",
+    languageBern: "Bärndütsch",
+    labelLanguage: "Language",
+    labelPdfs: "PDF files (2 to 10, in order)",
+    labelInsertDivider: "Insert a blank page between merged documents",
+    labelAddCover: "Add a cover page listing included documents",
+    labelOutputName: "Output filename",
+    buttonMerge: "Merge PDFs",
+    statusTitle: "Status",
+    downloadLink: "Download merged PDF",
+    subtitle: "Fast browser-only PDF merges powered by <code>pdfcpu.wasm</code>",
+    infoTitle: "How This Works",
+    infoText1: "JoinPDF runs fully in your browser. Your PDF files are processed locally in memory using WebAssembly, and they are not uploaded or sent to any server.",
+    infoText2: "Powered by <a href=\"https://github.com/pdfcpu/pdfcpu\" target=\"_blank\" rel=\"noopener noreferrer\">pdfcpu</a> compiled to <a href=\"https://en.wikipedia.org/wiki/WebAssembly\" target=\"_blank\" rel=\"noopener noreferrer\">WebAssembly</a> made by christian-at-ramseyer.it. Check out the <a href=\"https://github.com/rc9000/joinpdf\" target=\"_blank\" rel=\"noopener noreferrer\">github repo</a> to contribute or download the files to self-host.",
+    defaultOutputName: "merged.pdf",
+    statusReady: "Ready.",
+    statusTooMany: "You selected {count} files. Only the first {max} will be merged.",
+    statusSelectAtLeast: "Select at least 2 PDF files.",
+    statusInvalidFile: "Invalid file: {name}. Only PDF files are allowed.",
+    statusMerging: "Merging...",
+    statusMergeComplete: "Merge complete.",
+    statusErrorPrefix: "Error",
+    statusPass1: "Running pass 1/2: merge documents with divider pages...",
+    statusPass2: "Running pass 2/2: prepend cover page...",
+    coverTitle: "JoinPDF",
+    coverSubtitle: "ramseyer.it/joinpdf",
+    coverHeading: "Joined PDF documents in this file:",
+  },
+  gsw: {
+    languageEnglish: "English",
+    languageBern: "Bärndütsch",
+    labelLanguage: "Sprach",
+    labelPdfs: "PDFs zum zämechläbe (zwöi bis zäh, genau i dere Reihefoug)",
+    labelInsertDivider: "Lääri Site zwüsche d'Dokumänt",
+    labelAddCover: "Deckblatt mit Liste vo aune PDFs",
+    labelOutputName: "Dateiname",
+    buttonMerge: "Ab der Bäse",
+    statusTitle: "Schtatus",
+    downloadLink: "Zämegchläbts PDF abelade",
+    subtitle: "Schnäus Browser-only PDF-Zämechläbe, gmacht mit <code>pdfcpu.wasm</code>",
+    infoTitle: "Wie das lauft",
+    infoText1: "JoinPDF louft vou im Browser. Dini PDFs bliibed lokal im Speicher und gö niene häre. Kei Cloud, kei Abzockerei, kei Ficheskandau.",
+    infoText2: "Gmacht mit <a href=\"https://github.com/pdfcpu/pdfcpu\" target=\"_blank\" rel=\"noopener noreferrer\">pdfcpu</a>, mit Wäutruum-Technolgoie <a href=\"https://en.wikipedia.org/wiki/WebAssembly\" target=\"_blank\" rel=\"noopener noreferrer\">WebAssembly</a>, gmacht vom christian-at-ramseyer.it. S'GitHub isch do: <a href=\"https://github.com/rc9000/joinpdf\" target=\"_blank\" rel=\"noopener noreferrer\">repo</a> zum Mitmache oder selber hoste.",
+    defaultOutputName: "fertig.pdf",
+    statusReady: "Bereit.",
+    statusTooMany: "Du hesch {count} Datei ufeglade. Numme di erschte {max} wärded zämegchläbt",
+    statusSelectAtLeast: "Brucht mindeschtens zwöi PDF-Dateie.",
+    statusInvalidFile: "Das da isch keis PDF: {name}. Nume PDFs bitte.",
+    statusMerging: "Am zämechläbe...",
+    statusMergeComplete: "Fertig zämegchläbt.",
+    statusErrorPrefix: "Hoppla",
+    statusPass1: "Schrittli 1/2: Dokumänt mit lääre Sitä...",
+    statusPass2: "Schrittli 2/2: Deckblatt vorne dra...",
+    coverTitle: "JoinPDF",
+    coverSubtitle: "ramseyer.it/joinpdf",
+    coverHeading: "Joined PDF documents in this file:",
+  },
+};
+
+function t(key, vars = {}) {
+  const table = I18N[currentLang] || I18N.en;
+  const raw = table[key] ?? I18N.en[key] ?? key;
+  return raw.replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? String(vars[k]) : `{${k}}`));
+}
+
+let currentLang = "en";
+
+function applyTranslations(lang) {
+  currentLang = I18N[lang] ? lang : "en";
+  document.documentElement.lang = currentLang === "gsw" ? "de-CH" : "en";
+
+  const textNodes = document.querySelectorAll("[data-i18n]");
+  textNodes.forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+
+  const htmlNodes = document.querySelectorAll("[data-i18n-html]");
+  htmlNodes.forEach((el) => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+
+  const placeholderNodes = document.querySelectorAll("[data-i18n-placeholder]");
+  placeholderNodes.forEach((el) => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+
+  if (els.languageSelect) {
+    const options = els.languageSelect.options;
+    if (options[0]) options[0].textContent = t("languageEnglish");
+    if (options[1]) options[1].textContent = t("languageBern");
+    els.languageSelect.value = currentLang;
+  }
+
+  if (!els.outputName.dataset.edited) {
+    els.outputName.value = t("defaultOutputName");
+  }
+
+  if (lastStatusKey) {
+    setStatus(t(lastStatusKey.key, lastStatusKey.vars));
+  }
+}
 
 function setStatus(text) {
   els.status.textContent = text;
 }
 
 function appendStatus(line) {
+  lastStatusKey = null;
   els.status.textContent = `${els.status.textContent}\n${line}`.trim();
+}
+
+function setStatusMessage(key, vars) {
+  lastStatusKey = { key, vars };
+  setStatus(t(key, vars));
 }
 
 function disableDownload() {
@@ -473,12 +585,12 @@ function sanitizePdfText(text) {
     .replace(/[^\x20-\x7E]/g, "?");
 }
 
-function buildCoverPdf(docNames) {
+function buildCoverPdf(docNames, coverText) {
   const lines = [
-    "JoinPDF",
-    "ramseyer.it/joinpdf",
+    coverText.coverTitle,
+    coverText.coverSubtitle,
     "",
-    "Joined PDF documents in this file:",
+    coverText.coverHeading,
   ];
   docNames.forEach((name, idx) => lines.push(`${idx + 1}. ${name}`));
 
@@ -571,7 +683,11 @@ async function mergeWithPdfcpu(files, options) {
     return fs.readFile("/work/output.pdf");
   }
 
-  const coverBytes = buildCoverPdf(files.map((f) => f.name));
+  const coverBytes = buildCoverPdf(files.map((f) => f.name), {
+    coverTitle: t("coverTitle"),
+    coverSubtitle: t("coverSubtitle"),
+    coverHeading: t("coverHeading"),
+  });
   fs.writeFile("/work/cover.pdf", coverBytes);
 
   if (!options.insertDivider) {
@@ -579,10 +695,10 @@ async function mergeWithPdfcpu(files, options) {
     return fs.readFile("/work/output.pdf");
   }
 
-  appendStatus("Running pass 1/2: merge documents with divider pages...");
+  appendStatus(t("statusPass1"));
   await runPdfcpuMerge(fs, inputPaths, "/work/docs-with-dividers.pdf", true);
 
-  appendStatus("Running pass 2/2: prepend cover page...");
+  appendStatus(t("statusPass2"));
   await runPdfcpuMerge(fs, ["/work/cover.pdf", "/work/docs-with-dividers.pdf"], "/work/output.pdf", false);
   return fs.readFile("/work/output.pdf");
 }
@@ -606,10 +722,18 @@ els.pdfs.addEventListener("change", () => {
   const files = Array.from(els.pdfs.files || []);
   renderFileList(files.slice(0, MAX_FILES));
   if (files.length > MAX_FILES) {
-    setStatus(`You selected ${files.length} files. Only the first ${MAX_FILES} will be merged.`);
+    setStatusMessage("statusTooMany", { count: files.length, max: MAX_FILES });
   } else {
-    setStatus("Ready.");
+    setStatusMessage("statusReady");
   }
+});
+
+els.outputName.addEventListener("input", () => {
+  els.outputName.dataset.edited = "true";
+});
+
+els.languageSelect.addEventListener("change", () => {
+  applyTranslations(els.languageSelect.value);
 });
 
 els.mergeBtn.addEventListener("click", async () => {
@@ -617,18 +741,18 @@ els.mergeBtn.addEventListener("click", async () => {
 
   const files = Array.from(els.pdfs.files || []).slice(0, MAX_FILES);
   if (files.length < 2) {
-    setStatus("Select at least 2 PDF files.");
+    setStatusMessage("statusSelectAtLeast");
     return;
   }
 
   const invalid = files.find((file) => !isPdfLike(file));
   if (invalid) {
-    setStatus(`Invalid file: ${invalid.name}. Only PDF files are allowed.`);
+    setStatusMessage("statusInvalidFile", { name: invalid.name });
     return;
   }
 
   els.mergeBtn.disabled = true;
-  setStatus("Merging...");
+  setStatusMessage("statusMerging");
 
   try {
     const outputNameRaw = (els.outputName.value || "merged.pdf").trim().replace(/\s+/g, "_") || "merged.pdf";
@@ -641,12 +765,13 @@ els.mergeBtn.addEventListener("click", async () => {
 
     const blob = new Blob([mergedBytes], { type: "application/pdf" });
     enableDownload(blob, outputName);
-    appendStatus("Merge complete.");
+    appendStatus(t("statusMergeComplete"));
   } catch (err) {
-    appendStatus(`Error: ${err.message}`);
+    appendStatus(`${t("statusErrorPrefix")}: ${err.message}`);
   } finally {
     els.mergeBtn.disabled = false;
   }
 });
 
-setStatus("Ready.");
+applyTranslations("en");
+setStatusMessage("statusReady");

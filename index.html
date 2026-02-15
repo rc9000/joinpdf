@@ -11,43 +11,49 @@
     <header class="brand">
       <p class="brand-kicker">ramseyer.it/joinpdf</p>
       <h1 class="brand-name">JoinPDF</h1>
-      <p class="subtitle">Fast browser-only PDF merges powered by <code>pdfcpu.wasm</code></p>
+      <p class="subtitle" data-i18n-html="subtitle">Fast browser-only PDF merges powered by <code>pdfcpu.wasm</code></p>
     </header>
 
     <section class="panel">
-      <label for="pdfs">PDF files (2 to 10, in order)</label>
+      <label for="languageSelect"><span data-i18n="labelLanguage">Language</span></label>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="gsw">Baernduetsch</option>
+      </select>
+
+      <label for="pdfs"><span data-i18n="labelPdfs">PDF files (2 to 10, in order)</span></label>
       <input id="pdfs" type="file" accept="application/pdf,.pdf" multiple>
       <ol id="fileList" class="file-list"></ol>
 
       <label class="checkbox">
         <input id="insertDivider" type="checkbox">
-        Insert a blank page between merged documents
+        <span data-i18n="labelInsertDivider">Insert a blank page between merged documents</span>
       </label>
 
       <label class="checkbox">
         <input id="addCover" type="checkbox">
-        Add a cover page listing included documents
+        <span data-i18n="labelAddCover">Add a cover page listing included documents</span>
       </label>
 
-      <label for="outputName">Output filename</label>
-      <input id="outputName" type="text" value="merged.pdf" placeholder="merged.pdf">
+      <label for="outputName"><span data-i18n="labelOutputName">Output filename</span></label>
+      <input id="outputName" type="text" value="merged.pdf" placeholder="merged.pdf" data-i18n-placeholder="defaultOutputName">
 
-      <button id="mergeBtn" type="button">Merge PDFs</button>
+      <button id="mergeBtn" type="button" data-i18n="buttonMerge">Merge PDFs</button>
     </section>
 
     <section class="panel">
-      <h2>Status</h2>
+      <h2 data-i18n="statusTitle">Status</h2>
       <pre id="status" aria-live="polite">Ready.</pre>
-      <a id="downloadLink" class="download disabled" href="#" download="merged.pdf" aria-disabled="true">Download merged PDF</a>
+      <a id="downloadLink" class="download disabled" href="#" download="merged.pdf" aria-disabled="true" data-i18n="downloadLink">Download merged PDF</a>
     </section>
 
     <section class="panel info">
-      <h2>How This Works</h2>
-      <p>
+      <h2 data-i18n="infoTitle">How This Works</h2>
+      <p id="infoText1" data-i18n-html="infoText1">
         JoinPDF runs fully in your browser. Your PDF files are processed locally in memory using WebAssembly,
         and they are not uploaded or sent to any server.
       </p>
-      <p>
+      <p id="infoText2" data-i18n-html="infoText2">
         Powered by
         <a href="https://github.com/pdfcpu/pdfcpu" target="_blank" rel="noopener noreferrer">pdfcpu</a>
         compiled to
